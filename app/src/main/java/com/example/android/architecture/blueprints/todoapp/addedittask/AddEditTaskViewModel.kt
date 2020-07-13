@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for the Add/Edit screen.
+ * Todo Title과 task를 입력하는 곳 (New Task)
+ *  https://vagabond95.me/2020/03/13/live_data_with_event_issue/
  */
 class AddEditTaskViewModel(
     private val getTaskUseCase: GetTaskUseCase,
@@ -45,6 +47,8 @@ class AddEditTaskViewModel(
     private val _dataLoading = MutableLiveData<Boolean>()
     val dataLoading: LiveData<Boolean> = _dataLoading
 
+    // IO 의 경우 데이터를 Event 로 한번 더 래핑 (리스너)
+    // 한번 발생한 이벤트에 대해 변경 불가능하기 위해서 val / LiveData 로 다시 담는건가 ?
     private val _snackbarText = MutableLiveData<Event<Int>>()
     val snackbarText: LiveData<Event<Int>> = _snackbarText
 
@@ -107,7 +111,7 @@ class AddEditTaskViewModel(
         val currentDescription = description.value
 
         if (currentTitle == null || currentDescription == null) {
-            _snackbarText.value = Event(R.string.empty_task_message)
+            _snackbarText.value = Event(R.string.empty_task_message) //래핑 한번 해주넹
             return
         }
         if (Task(currentTitle, currentDescription).isEmpty) {

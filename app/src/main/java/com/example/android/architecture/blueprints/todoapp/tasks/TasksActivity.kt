@@ -42,6 +42,8 @@ class TasksActivity : AppCompatActivity() {
         setupNavigationDrawer()
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        //우리가 만든 네비게이션 그래프에 맞게 NavHost 안이 구현되도록 도와주는 오브젝트.
+        //액티비티, 프래그먼트 간 통신이 원활하게 해줌, Appbar title 을 바꾸기 위한 작업 1
         val navController: NavController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration =
             AppBarConfiguration.Builder(R.id.tasks_fragment_dest, R.id.statistics_fragment_dest)
@@ -52,11 +54,12 @@ class TasksActivity : AppCompatActivity() {
             .setupWithNavController(navController)
     }
 
+    //title bar 변경을 위한 작업 2
     override fun onSupportNavigateUp(): Boolean {
         return findNavController(R.id.nav_host_fragment).navigateUp(appBarConfiguration)
             || super.onSupportNavigateUp()
     }
-
+    //drawer 설정
     private fun setupNavigationDrawer() {
         drawerLayout = (findViewById<DrawerLayout>(R.id.drawer_layout))
             .apply {
