@@ -15,25 +15,25 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 
 /**
  * Main entry point for accessing tasks data.
  */
 interface TasksDataSource {
 
-    suspend fun getTasks(): Result<List<Task>>
+    suspend fun getTasks(): Result<List<TaskModel>>
 
-    suspend fun getTask(taskId: String): Result<Task>
+    suspend fun getTask(taskId: String): Result<TaskModel>
 
-    suspend fun saveTask(task: Task)
+    suspend fun saveTask(taskModel: TaskModel)
 
-    suspend fun completeTask(task: Task)
+    suspend fun completeTask(taskModel: TaskModel)
 
     suspend fun completeTask(taskId: String)
 
-    suspend fun activateTask(task: Task)
+    suspend fun activateTask(taskModel: TaskModel)
 
     suspend fun activateTask(taskId: String)
 

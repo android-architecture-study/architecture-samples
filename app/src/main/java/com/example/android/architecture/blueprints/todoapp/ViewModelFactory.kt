@@ -17,8 +17,8 @@ package com.example.android.architecture.blueprints.todoapp
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.android.architecture.blueprints.todoapp.addedittask.AddEditTaskViewModel
-import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.addedittask.AddEditTaskViewModel
+import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.domain.ActivateTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.ClearCompletedTasksUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.CompleteTaskUseCase
@@ -26,9 +26,9 @@ import com.example.android.architecture.blueprints.todoapp.domain.DeleteTaskUseC
 import com.example.android.architecture.blueprints.todoapp.domain.GetTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.GetTasksUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.SaveTaskUseCase
-import com.example.android.architecture.blueprints.todoapp.statistics.StatisticsViewModel
-import com.example.android.architecture.blueprints.todoapp.taskdetail.TaskDetailViewModel
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksViewModel
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.statistics.StatisticsViewModel
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.taskdetail.TaskDetailViewModel
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksViewModel
 
 /**
  * Factory for all ViewModels.

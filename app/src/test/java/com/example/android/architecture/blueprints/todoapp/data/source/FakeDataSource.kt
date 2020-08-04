@@ -16,55 +16,55 @@
 
 package com.example.android.architecture.blueprints.todoapp.data.source
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Result.Error
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 
-class FakeDataSource(var tasks: MutableList<Task>? = mutableListOf()) : TasksDataSource {
-    override suspend fun getTasks(): Result<List<Task>> {
-        tasks?.let { return Success(it) }
+class FakeDataSource(var taskModels: MutableList<TaskModel>? = mutableListOf()) : TasksDataSource {
+    override suspend fun getTasks(): Result<List<TaskModel>> {
+        taskModels?.let { return Success(it) }
         return Error(
             Exception("Tasks not found")
         )
     }
 
-    override suspend fun getTask(taskId: String): Result<Task> {
-        tasks?.firstOrNull { it.id == taskId }?.let { return Success(it) }
+    override suspend fun getTask(taskId: String): Result<TaskModel> {
+        taskModels?.firstOrNull { it.id == taskId }?.let { return Success(it) }
         return Error(
             Exception("Task not found")
         )
     }
 
-    override suspend fun saveTask(task: Task) {
-        tasks?.add(task)
+    override suspend fun saveTask(taskModel: TaskModel) {
+        taskModels?.add(taskModel)
     }
 
-    override suspend fun completeTask(task: Task) {
-        tasks?.firstOrNull { it.id == task.id }?.let { it.isCompleted = true }
+    override suspend fun completeTask(taskModel: TaskModel) {
+        taskModels?.firstOrNull { it.id == taskModel.id }?.let { it.isCompleted = true }
     }
 
     override suspend fun completeTask(taskId: String) {
-        tasks?.firstOrNull { it.id == taskId }?.let { it.isCompleted = true }
+        taskModels?.firstOrNull { it.id == taskId }?.let { it.isCompleted = true }
     }
 
-    override suspend fun activateTask(task: Task) {
-        tasks?.firstOrNull { it.id == task.id }?.let { it.isCompleted = false }
+    override suspend fun activateTask(taskModel: TaskModel) {
+        taskModels?.firstOrNull { it.id == taskModel.id }?.let { it.isCompleted = false }
     }
 
     override suspend fun activateTask(taskId: String) {
-        tasks?.firstOrNull { it.id == taskId }?.let { it.isCompleted = false }
+        taskModels?.firstOrNull { it.id == taskId }?.let { it.isCompleted = false }
     }
 
     override suspend fun clearCompletedTasks() {
-        tasks?.removeIf { it.isCompleted }
+        taskModels?.removeIf { it.isCompleted }
     }
 
     override suspend fun deleteAllTasks() {
-        tasks?.clear()
+        taskModels?.clear()
     }
 
     override suspend fun deleteTask(taskId: String) {
-        tasks?.removeIf { it.id == taskId }
+        taskModels?.removeIf { it.id == taskId }
     }
 }

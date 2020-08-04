@@ -21,7 +21,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.android.architecture.blueprints.todoapp.data.Task
 
 /**
  * Data Access Object for the tasks table.
@@ -35,7 +34,7 @@ interface TasksDao {
      * @return all tasks.
      */
     @Query("SELECT * FROM Tasks")
-    suspend fun getTasks(): List<Task>
+    suspend fun getTasks(): List<TaskModel>
 
     /**
      * Select a task by id.
@@ -44,24 +43,24 @@ interface TasksDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM Tasks WHERE entryid = :taskId")
-    suspend fun getTaskById(taskId: String): Task?
+    suspend fun getTaskById(taskId: String): TaskModel?
 
     /**
      * Insert a task in the database. If the task already exists, replace it.
      *
-     * @param task the task to be inserted.
+     * @param taskModel the task to be inserted.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: Task)
+    suspend fun insertTask(taskModel: TaskModel)
 
     /**
      * Update a task.
      *
-     * @param task task to be updated
+     * @param taskModel task to be updated
      * @return the number of tasks updated. This should always be 1.
      */
     @Update
-    suspend fun updateTask(task: Task): Int
+    suspend fun updateTask(taskModel: TaskModel): Int
 
     /**
      * Update the complete status of a task

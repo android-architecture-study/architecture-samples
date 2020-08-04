@@ -1,14 +1,14 @@
 package com.example.android.architecture.blueprints.todoapp.domain
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
-import com.example.android.architecture.blueprints.todoapp.util.wrapEspressoIdlingResource
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
+import com.example.android.architecture.blueprints.todoapp.domain.entity.Task
+import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType.ACTIVE_TASKS
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType.ALL_TASKS
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType.COMPLETED_TASKS
+import com.example.android.architecture.blueprints.todoapp.presentation.util.wrapEspressoIdlingResource
 
 class GetTasksUseCase(
     private val tasksRepository: TasksRepository
@@ -19,7 +19,6 @@ class GetTasksUseCase(
     ): Result<List<Task>> {
 
         wrapEspressoIdlingResource {
-
             val tasksResult = tasksRepository.getTasks(forceUpdate)
 
             // Filter tasks
@@ -30,10 +29,10 @@ class GetTasksUseCase(
                 // We filter the tasks based on the requestType
                 for (task in tasks) {
                     when (currentFiltering) {
-                        ACTIVE_TASKS -> if (task.isActive) {
+                        ACTIVE_TASKS -> if (!task.completed) {
                             tasksToShow.add(task)
                         }
-                        COMPLETED_TASKS -> if (task.isCompleted) {
+                        COMPLETED_TASKS -> if (task.completed) {
                             tasksToShow.add(task)
                         }
                         else -> NotImplementedError()

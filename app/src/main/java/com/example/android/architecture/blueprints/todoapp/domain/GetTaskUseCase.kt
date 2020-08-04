@@ -1,9 +1,9 @@
 package com.example.android.architecture.blueprints.todoapp.domain
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
-import com.example.android.architecture.blueprints.todoapp.util.wrapEspressoIdlingResource
+import com.example.android.architecture.blueprints.todoapp.domain.entity.Task
+import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.presentation.util.wrapEspressoIdlingResource
 
 class GetTaskUseCase(
     private val tasksRepository: TasksRepository

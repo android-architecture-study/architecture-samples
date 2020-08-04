@@ -15,10 +15,14 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Result.Error
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskEntityMapper
+import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskListMapper
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
+import com.example.android.architecture.blueprints.todoapp.domain.entity.Task
+import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -41,6 +45,8 @@ class DefaultTasksRepository(
 ) : TasksRepository {
 
     private var cachedTasks: ConcurrentMap<String, Task>? = null
+    private var taskListMapper = TaskListMapper()
+    private var taskEntityMapper = TaskEntityMapper()
 
     override suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
 
@@ -48,7 +54,7 @@ class DefaultTasksRepository(
             // Respond immediately with cache if available and not dirty
             if (!forceUpdate) {
                 cachedTasks?.let { cachedTasks ->
-                    return@withContext Success(cachedTasks.values.sortedBy { it.id })
+                    return@withContext Success(cachedTasks.values.sortedBy { it.entryid })
                 }
             }
 
@@ -58,7 +64,7 @@ class DefaultTasksRepository(
             (newTasks as? Success)?.let { refreshCache(it.data) }
 
             cachedTasks?.values?.let { tasks ->
-                return@withContext Success(tasks.sortedBy { it.id })
+                return@withContext Success(tasks.sortedBy { it.entryid })
             }
 
             (newTasks as? Success)?.let {
@@ -74,11 +80,12 @@ class DefaultTasksRepository(
     private suspend fun fetchTasksFromRemoteOrLocal(forceUpdate: Boolean): Result<List<Task>> {
         // Remote first
         val remoteTasks = tasksRemoteDataSource.getTasks()
+
         when (remoteTasks) {
             is Error -> Timber.w("Remote data source fetch failed")
             is Success -> {
                 refreshLocalDataSource(remoteTasks.data)
-                return remoteTasks
+                return Success(taskListMapper.toEntity(remoteTasks.data))
             }
             else -> throw IllegalStateException()
         }
@@ -90,7 +97,7 @@ class DefaultTasksRepository(
 
         // Local if remote fails
         val localTasks = tasksLocalDataSource.getTasks()
-        if (localTasks is Success) return localTasks
+        if (localTasks is Success) return Success(taskListMapper.toEntity(localTasks.data))
         return Error(Exception("Error fetching from remote and local"))
     }
 
@@ -110,16 +117,19 @@ class DefaultTasksRepository(
             val newTask = fetchTaskFromRemoteOrLocal(taskId, forceUpdate)
 
             // Refresh the cache with the new tasks
-            (newTask as? Success)?.let { cacheTask(it.data) }
-
-            return@withContext newTask
+            (newTask as? Success)?.let {
+                cacheTask(taskEntityMapper.toEntity(it.data))
+                return@withContext Success(taskEntityMapper.toEntity(newTask.data))
+            }
+            return@withContext Error(Exception("Error fetching from remote and local"))
         }
+        
     }
 
     private suspend fun fetchTaskFromRemoteOrLocal(
         taskId: String,
         forceUpdate: Boolean
-    ): Result<Task> {
+    ): Result<TaskModel> {
         // Remote first
         val remoteTask = tasksRemoteDataSource.getTask(taskId)
         when (remoteTask) {
@@ -146,8 +156,8 @@ class DefaultTasksRepository(
         // Do in memory cache update to keep the app UI up to date
         cacheAndPerform(task) {
             coroutineScope {
-                launch { tasksRemoteDataSource.saveTask(it) }
-                launch { tasksLocalDataSource.saveTask(it) }
+                launch { tasksRemoteDataSource.saveTask(taskEntityMapper.toModel(it)) }
+                launch { tasksLocalDataSource.saveTask(taskEntityMapper.toModel(it)) }
             }
         }
     }
@@ -155,10 +165,10 @@ class DefaultTasksRepository(
     override suspend fun completeTask(task: Task) {
         // Do in memory cache update to keep the app UI up to date
         cacheAndPerform(task) {
-            it.isCompleted = true
+            it.completed = true
             coroutineScope {
-                launch { tasksRemoteDataSource.completeTask(it) }
-                launch { tasksLocalDataSource.completeTask(it) }
+                launch { tasksRemoteDataSource.completeTask(taskEntityMapper.toModel(it)) }
+                launch { tasksLocalDataSource.completeTask(taskEntityMapper.toModel(it)) }
             }
         }
     }
@@ -174,10 +184,10 @@ class DefaultTasksRepository(
     override suspend fun activateTask(task: Task) = withContext(ioDispatcher) {
         // Do in memory cache update to keep the app UI up to date
         cacheAndPerform(task) {
-            it.isCompleted = false
+            it.completed = false
             coroutineScope {
-                launch { tasksRemoteDataSource.activateTask(it) }
-                launch { tasksLocalDataSource.activateTask(it) }
+                launch { tasksRemoteDataSource.activateTask(taskEntityMapper.toModel(it)) }
+                launch { tasksLocalDataSource.activateTask(taskEntityMapper.toModel(it)) }
             }
 
         }
@@ -197,7 +207,7 @@ class DefaultTasksRepository(
             launch { tasksLocalDataSource.clearCompletedTasks() }
         }
         withContext(ioDispatcher) {
-            cachedTasks?.entries?.removeAll { it.value.isCompleted }
+            cachedTasks?.entries?.removeAll { it.value.completed }
         }
     }
 
@@ -222,31 +232,31 @@ class DefaultTasksRepository(
 
     private fun refreshCache(tasks: List<Task>) {
         cachedTasks?.clear()
-        tasks.sortedBy { it.id }.forEach {
+        tasks.sortedBy { it.entryid }.forEach {
             cacheAndPerform(it) {}
         }
     }
 
-    private suspend fun refreshLocalDataSource(tasks: List<Task>) {
+    private suspend fun refreshLocalDataSource(taskModels: List<TaskModel>) {
         tasksLocalDataSource.deleteAllTasks()
-        for (task in tasks) {
+        for (task in taskModels) {
             tasksLocalDataSource.saveTask(task)
         }
     }
 
-    private suspend fun refreshLocalDataSource(task: Task) {
-        tasksLocalDataSource.saveTask(task)
+    private suspend fun refreshLocalDataSource(taskModel: TaskModel) {
+        tasksLocalDataSource.saveTask(taskModel)
     }
 
     private fun getTaskWithId(id: String) = cachedTasks?.get(id)
 
     private fun cacheTask(task: Task): Task {
-        val cachedTask = Task(task.title, task.description, task.isCompleted, task.id)
+        val cachedTask = Task(task.title, task.description, task.completed, task.entryid)
         // Create if it doesn't exist.
         if (cachedTasks == null) {
             cachedTasks = ConcurrentHashMap()
         }
-        cachedTasks?.put(cachedTask.id, cachedTask)
+        cachedTasks?.put(cachedTask.entryid, cachedTask)
         return cachedTask
     }
 

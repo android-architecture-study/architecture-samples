@@ -24,7 +24,7 @@
 
         <variable
             name="viewmodel"
-            type="com.example.android.architecture.blueprints.todoapp.taskdetail.TaskDetailViewModel" />
+            type="com.example.android.architecture.blueprints.todoapp.presentation.ui.taskdetail.TaskDetailViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -95,7 +95,7 @@
                         android:layout_height="wrap_content"
                         android:layout_toRightOf="@id/task_detail_complete_checkbox"
                         android:paddingTop="1dp"
-                        android:text="@{viewmodel.task.title}"
+                        android:text="@{viewmodel.taskModel.title}"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
 
                     <TextView
@@ -105,7 +105,7 @@
                         android:layout_below="@id/task_detail_title_text"
                         android:layout_toRightOf="@id/task_detail_complete_checkbox"
                         android:paddingTop="1dp"
-                        android:text="@{viewmodel.task.description}"
+                        android:text="@{viewmodel.taskModel.description}"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 </RelativeLayout>

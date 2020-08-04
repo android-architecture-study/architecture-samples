@@ -16,24 +16,24 @@
 
 package com.example.android.architecture.blueprints.todoapp
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 
 object FakeFailingTasksRemoteDataSource : TasksDataSource {
-    override suspend fun getTasks(): Result<List<Task>> {
+    override suspend fun getTasks(): Result<List<TaskModel>> {
         return Result.Error(Exception("Test"))
     }
 
-    override suspend fun getTask(taskId: String): Result<Task> {
+    override suspend fun getTask(taskId: String): Result<TaskModel> {
         return Result.Error(Exception("Test"))
     }
 
-    override suspend fun saveTask(task: Task) {
+    override suspend fun saveTask(taskModel: TaskModel) {
         TODO("not implemented")
     }
 
-    override suspend fun completeTask(task: Task) {
+    override suspend fun completeTask(taskModel: TaskModel) {
         TODO("not implemented")
     }
 
@@ -41,7 +41,7 @@ object FakeFailingTasksRemoteDataSource : TasksDataSource {
         TODO("not implemented")
     }
 
-    override suspend fun activateTask(task: Task) {
+    override suspend fun activateTask(taskModel: TaskModel) {
         TODO("not implemented")
     }
 

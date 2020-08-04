@@ -15,9 +15,11 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data
 
-import com.example.android.architecture.blueprints.todoapp.data.Result.Error
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
 import java.util.LinkedHashMap
 
 /**
@@ -25,35 +27,35 @@ import java.util.LinkedHashMap
  */
 object FakeTasksRemoteDataSource : TasksDataSource {
 
-    private var TASKS_SERVICE_DATA: LinkedHashMap<String, Task> = LinkedHashMap()
+    private var tasksServiceData: LinkedHashMap<String, TaskModel> = LinkedHashMap()
 
-    override suspend fun getTask(taskId: String): Result<Task> {
-        TASKS_SERVICE_DATA[taskId]?.let {
+    override suspend fun getTask(taskId: String): Result<TaskModel> {
+        tasksServiceData[taskId]?.let {
             return Success(it)
         }
         return Error(Exception("Could not find task"))
     }
 
-    override suspend fun getTasks(): Result<List<Task>> {
-        return Success(TASKS_SERVICE_DATA.values.toList())
+    override suspend fun getTasks(): Result<List<TaskModel>> {
+        return Success(tasksServiceData.values.toList())
     }
 
-    override suspend fun saveTask(task: Task) {
-        TASKS_SERVICE_DATA[task.id] = task
+    override suspend fun saveTask(taskModel: TaskModel) {
+        tasksServiceData[taskModel.id] = taskModel
     }
 
-    override suspend fun completeTask(task: Task) {
-        val completedTask = Task(task.title, task.description, true, task.id)
-        TASKS_SERVICE_DATA[task.id] = completedTask
+    override suspend fun completeTask(taskModel: TaskModel) {
+        val completedTask = TaskModel(taskModel.title, taskModel.description, true, taskModel.id)
+        tasksServiceData[taskModel.id] = completedTask
     }
 
     override suspend fun completeTask(taskId: String) {
         // Not required for the remote data source.
     }
 
-    override suspend fun activateTask(task: Task) {
-        val activeTask = Task(task.title, task.description, false, task.id)
-        TASKS_SERVICE_DATA[task.id] = activeTask
+    override suspend fun activateTask(taskModel: TaskModel) {
+        val activeTask = TaskModel(taskModel.title, taskModel.description, false, taskModel.id)
+        tasksServiceData[taskModel.id] = activeTask
     }
 
     override suspend fun activateTask(taskId: String) {
@@ -61,16 +63,16 @@ object FakeTasksRemoteDataSource : TasksDataSource {
     }
 
     override suspend fun clearCompletedTasks() {
-        TASKS_SERVICE_DATA = TASKS_SERVICE_DATA.filterValues {
+        tasksServiceData = tasksServiceData.filterValues {
             !it.isCompleted
-        } as LinkedHashMap<String, Task>
+        } as LinkedHashMap<String, TaskModel>
     }
 
     override suspend fun deleteTask(taskId: String) {
-        TASKS_SERVICE_DATA.remove(taskId)
+        tasksServiceData.remove(taskId)
     }
 
     override suspend fun deleteAllTasks() {
-        TASKS_SERVICE_DATA.clear()
+        tasksServiceData.clear()
     }
 }

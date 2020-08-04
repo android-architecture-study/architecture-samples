@@ -1,11 +1,11 @@
 package com.example.android.architecture.blueprints.todoapp.domain
 
-import com.example.android.architecture.blueprints.todoapp.data.Result.Error
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
+import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType.ACTIVE_TASKS
+import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksFilterType.COMPLETED_TASKS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
@@ -50,9 +50,9 @@ class GetTasksUseCaseTest {
     fun loadTasks_noFilter() = runBlockingTest {
         // Given a repository with 1 active and 2 completed tasks:
         tasksRepository.addTasks(
-            Task("title", "desc", false),
-            Task("title", "desc", true),
-            Task("title", "desc", true)
+                TaskModel("title", "desc", false),
+                TaskModel("title", "desc", true),
+                TaskModel("title", "desc", true)
         )
 
         // Load tasks
@@ -67,9 +67,9 @@ class GetTasksUseCaseTest {
     fun loadTasks_completedFilter() = runBlockingTest{
         // Given a repository with 1 active and 2 completed tasks:
         tasksRepository.addTasks(
-            Task("title", "desc", false),
-            Task("title", "desc", true),
-            Task("title", "desc", true)
+                TaskModel("title", "desc", false),
+                TaskModel("title", "desc", true),
+                TaskModel("title", "desc", true)
         )
 
         // Load tasks
@@ -84,9 +84,9 @@ class GetTasksUseCaseTest {
     fun loadTasks_activeFilter() = runBlockingTest{
         // Given a repository with 1 active and 2 completed tasks:
         tasksRepository.addTasks(
-            Task("title", "desc", false),
-            Task("title", "desc", true),
-            Task("title", "desc", true)
+                TaskModel("title", "desc", false),
+                TaskModel("title", "desc", true),
+                TaskModel("title", "desc", true)
         )
 
         // Load tasks

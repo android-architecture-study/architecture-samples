@@ -15,10 +15,9 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source.local
 
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Result.Error
-import com.example.android.architecture.blueprints.todoapp.data.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
+import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +31,7 @@ class TasksLocalDataSource internal constructor(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : TasksDataSource {
 
-    override suspend fun getTasks(): Result<List<Task>> = withContext(ioDispatcher) {
+    override suspend fun getTasks(): Result<List<TaskModel>> = withContext(ioDispatcher) {
         return@withContext try {
             Success(tasksDao.getTasks())
         } catch (e: Exception) {
@@ -40,7 +39,7 @@ class TasksLocalDataSource internal constructor(
         }
     }
 
-    override suspend fun getTask(taskId: String): Result<Task> = withContext(ioDispatcher) {
+    override suspend fun getTask(taskId: String): Result<TaskModel> = withContext(ioDispatcher) {
         try {
             val task = tasksDao.getTaskById(taskId)
             if (task != null) {
@@ -53,20 +52,20 @@ class TasksLocalDataSource internal constructor(
         }
     }
 
-    override suspend fun saveTask(task: Task) = withContext(ioDispatcher) {
-        tasksDao.insertTask(task)
+    override suspend fun saveTask(taskModel: TaskModel) = withContext(ioDispatcher) {
+        tasksDao.insertTask(taskModel)
     }
 
-    override suspend fun completeTask(task: Task) = withContext(ioDispatcher) {
-        tasksDao.updateCompleted(task.id, true)
+    override suspend fun completeTask(taskModel: TaskModel) = withContext(ioDispatcher) {
+        tasksDao.updateCompleted(taskModel.id, true)
     }
 
     override suspend fun completeTask(taskId: String) {
         tasksDao.updateCompleted(taskId, true)
     }
 
-    override suspend fun activateTask(task: Task) = withContext(ioDispatcher) {
-        tasksDao.updateCompleted(task.id, false)
+    override suspend fun activateTask(taskModel: TaskModel) = withContext(ioDispatcher) {
+        tasksDao.updateCompleted(taskModel.id, false)
     }
 
     override suspend fun activateTask(taskId: String) {
