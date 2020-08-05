@@ -23,8 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android.architecture.blueprints.todoapp.Event
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskEntityMapper
-import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskListMapper
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
@@ -32,6 +30,10 @@ import com.example.android.architecture.blueprints.todoapp.domain.ActivateTaskUs
 import com.example.android.architecture.blueprints.todoapp.domain.CompleteTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.DeleteTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.GetTaskUseCase
+import com.example.android.architecture.blueprints.todoapp.domain.entity.Task
+import com.example.android.architecture.blueprints.todoapp.presentation.entity.PresenterEntity
+import com.example.android.architecture.blueprints.todoapp.presentation.mapper.PresenterEntityMapper
+import com.example.android.architecture.blueprints.todoapp.presentation.mapper.PresenterListMapper
 import com.example.android.architecture.blueprints.todoapp.presentation.util.wrapEspressoIdlingResource
 import kotlinx.coroutines.launch
 
@@ -46,11 +48,11 @@ class TaskDetailViewModel(
 
 ) : ViewModel() {
 
-    private val taskEntityMapper = TaskEntityMapper()
+    private val presenterListMapper = PresenterListMapper()
+    private val presenterEntityMapper = PresenterEntityMapper()
 
-
-    private val _task = MutableLiveData<TaskModel>()
-    val taskModel: LiveData<TaskModel> = _task
+    private val _task = MutableLiveData<PresenterEntity>()
+    val taskModel: LiveData<PresenterEntity> = _task
 
     private val _isDataAvailable = MutableLiveData<Boolean>()
     val isDataAvailable: LiveData<Boolean> = _isDataAvailable
@@ -68,11 +70,11 @@ class TaskDetailViewModel(
     val snackbarText: LiveData<Event<Int>> = _snackbarText
 
     private val taskId: String?
-        get() = _task.value?.id
+        get() = _task.value?.entryid
 
     // This LiveData depends on another so we can use a transformation.
-    val completed: LiveData<Boolean> = Transformations.map(_task) { input: TaskModel? ->
-        input?.isCompleted ?: false
+    val completed: LiveData<Boolean> = Transformations.map(_task) { input: PresenterEntity? ->
+        input?.completed ?: false
     }
 
 
@@ -90,10 +92,10 @@ class TaskDetailViewModel(
     fun setCompleted(completed: Boolean) = viewModelScope.launch {
         val task = _task.value ?: return@launch
         if (completed) {
-            completeTaskUseCase(taskEntityMapper.toEntity(task))
+            completeTaskUseCase(presenterEntityMapper.toEntity(task))
             showSnackbarMessage(R.string.task_marked_complete)
         } else {
-            activateTaskUseCase(taskEntityMapper.toEntity(task))
+            activateTaskUseCase(presenterEntityMapper.toEntity(task))
             showSnackbarMessage(R.string.task_marked_active)
         }
     }
@@ -111,9 +113,9 @@ class TaskDetailViewModel(
                 if (taskId != null) {
                     getTaskUseCase(taskId, false).let { result ->
                         if (result is Success) {
-                            onTaskLoaded(taskEntityMapper.toModel(result.data))
+                            onTaskLoaded(presenterEntityMapper.toView(result.data))
                         } else {
-                           // onDataNotAvailable(Success((taskEntityMapper.toEntity(result))
+                            onDataNotAvailable(presenterEntityMapper.toView(result as Task))
                         }
                     }
                 }
@@ -122,16 +124,16 @@ class TaskDetailViewModel(
         }
     }
 
-    private fun setTask(taskModel: TaskModel?) {
-        this._task.value = taskModel
+    private fun setTask(tasks: PresenterEntity?) {
+        this._task.value = tasks
         _isDataAvailable.value = taskModel != null
     }
 
-    private fun onTaskLoaded(taskModel: TaskModel) {
-        setTask(taskModel)
+    private fun onTaskLoaded(tasks: PresenterEntity) {
+        setTask(tasks)
     }
 
-    private fun onDataNotAvailable(result: Result<TaskModel>) {
+    private fun onDataNotAvailable(result: PresenterEntity) {
         _task.value = null
         _isDataAvailable.value = false
     }

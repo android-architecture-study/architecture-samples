@@ -15,6 +15,8 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
+import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskEntityMapper
+import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskListMapper
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
@@ -43,6 +45,9 @@ class DefaultTasksRepositoryTest {
 
     // Class under test
     private lateinit var tasksRepository: DefaultTasksRepository
+
+    private val taskEntityMapper = TaskEntityMapper()
+    private val taskListMapper = TaskListMapper()
 
     @ExperimentalCoroutinesApi
     @Before
@@ -96,7 +101,7 @@ class DefaultTasksRepositoryTest {
         assertThat((tasksRepository.getTasks() as? Success)?.data).doesNotContain(newTask)
 
         // When a task is saved to the tasks repository
-        tasksRepository.saveTask(newTask)
+        tasksRepository.saveTask(taskEntityMapper.toEntity(newTask))
 
         // Then the remote and local sources are called and the cache is updated
         assertThat(tasksRemoteDataSource.taskModels).contains(newTask)
@@ -171,7 +176,7 @@ class DefaultTasksRepositoryTest {
     @Test
     fun saveTask_savesTaskToRemoteAndUpdatesCache() = runBlockingTest {
         // Save a task
-        tasksRepository.saveTask(newTask)
+        tasksRepository.saveTask(taskEntityMapper.toEntity(newTask))
 
         // Verify it's in all the data sources
         assertThat(tasksLocalDataSource.taskModels).contains(newTask)
@@ -187,33 +192,33 @@ class DefaultTasksRepositoryTest {
     @Test
     fun completeTask_completesTaskToServiceAPIUpdatesCache() = runBlockingTest {
         // Save a task
-        tasksRepository.saveTask(newTask)
+        tasksRepository.saveTask(taskEntityMapper.toEntity(newTask))
 
         // Make sure it's active
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted).isFalse()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.completed).isFalse()
 
         // Mark is as complete
         tasksRepository.completeTask(newTask.id)
 
         // Verify it's now completed
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted).isTrue()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.completed).isTrue()
     }
 
     @Test
     fun completeTask_activeTaskToServiceAPIUpdatesCache() = runBlockingTest {
         // Save a task
-        tasksRepository.saveTask(newTask)
+        tasksRepository.saveTask(taskEntityMapper.toEntity(newTask))
         tasksRepository.completeTask(newTask.id)
 
         // Make sure it's completed
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isActive).isFalse()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.completed).isFalse()
 
         // Mark is as active
         tasksRepository.activateTask(newTask.id)
 
         // Verify it's now activated
         val result = tasksRepository.getTask(newTask.id) as Success
-        assertThat(result.data.isActive).isTrue()
+        assertThat(result.data.completed).isTrue()
     }
 
     @Test
@@ -229,8 +234,8 @@ class DefaultTasksRepositoryTest {
         val task2SecondTime = tasksRepository.getTask(task2.id) as Success
 
         // Both work because one is in remote and the other in cache
-        assertThat(task1SecondTime.data.id).isEqualTo(task1.id)
-        assertThat(task2SecondTime.data.id).isEqualTo(task2.id)
+        assertThat(task1SecondTime.data.entryid).isEqualTo(task1.id)
+        assertThat(task2SecondTime.data.entryid).isEqualTo(task2.id)
     }
 
     @Test
@@ -247,8 +252,8 @@ class DefaultTasksRepositoryTest {
         val task2SecondTime = tasksRepository.getTask(task2.id, true)
 
         // Only task2 works because the cache and local were invalidated
-        assertThat((task1SecondTime as? Success)?.data?.id).isNull()
-        assertThat((task2SecondTime as? Success)?.data?.id).isEqualTo(task2.id)
+        assertThat((task1SecondTime as? Success)?.data?.entryid).isNull()
+        assertThat((task2SecondTime as? Success)?.data?.entryid).isEqualTo(task2.id)
     }
 
     @Test

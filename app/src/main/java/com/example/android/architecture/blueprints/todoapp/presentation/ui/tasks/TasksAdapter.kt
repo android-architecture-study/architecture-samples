@@ -22,13 +22,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 import com.example.android.architecture.blueprints.todoapp.databinding.TaskItemBinding
+import com.example.android.architecture.blueprints.todoapp.presentation.entity.PresenterEntity
 import com.example.android.architecture.blueprints.todoapp.presentation.ui.tasks.TasksAdapter.ViewHolder
 
 /**
  * Adapter for the task list. Has a reference to the [TasksViewModel] to send actions back to it.
  */
 class TasksAdapter(private val viewModel: TasksViewModel) :
-    ListAdapter<TaskModel, ViewHolder>(TaskDiffCallback()) {
+    ListAdapter<PresenterEntity, ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
@@ -43,7 +44,7 @@ class TasksAdapter(private val viewModel: TasksViewModel) :
     class ViewHolder private constructor(val binding: TaskItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(viewModel: TasksViewModel, item: TaskModel) {
+        fun bind(viewModel: TasksViewModel, item: PresenterEntity) {
 
             binding.viewmodel = viewModel
             binding.task = item
@@ -67,12 +68,12 @@ class TasksAdapter(private val viewModel: TasksViewModel) :
  * Used by ListAdapter to calculate the minimum number of changes between and old list and a new
  * list that's been passed to `submitList`.
  */
-class TaskDiffCallback : DiffUtil.ItemCallback<TaskModel>() {
-    override fun areItemsTheSame(oldItem: TaskModel, newItem: TaskModel): Boolean {
-        return oldItem.id == newItem.id
+class TaskDiffCallback : DiffUtil.ItemCallback<PresenterEntity>() {
+    override fun areItemsTheSame(oldItem: PresenterEntity, newItem: PresenterEntity): Boolean {
+        return oldItem.entryid == newItem.entryid
     }
 
-    override fun areContentsTheSame(oldItem: TaskModel, newItem: TaskModel): Boolean {
+    override fun areContentsTheSame(oldItem: PresenterEntity, newItem: PresenterEntity): Boolean {
         return oldItem == newItem
     }
 }

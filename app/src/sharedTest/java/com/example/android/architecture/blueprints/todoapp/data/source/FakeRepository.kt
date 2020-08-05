@@ -19,7 +19,7 @@ import androidx.annotation.VisibleForTesting
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Error
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
+import com.example.android.architecture.blueprints.todoapp.domain.entity.Task
 import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
 import java.util.LinkedHashMap
 
@@ -28,7 +28,7 @@ import java.util.LinkedHashMap
  */
 class FakeRepository : TasksRepository {
 
-    var tasksServiceData: LinkedHashMap<String, TaskModel> = LinkedHashMap()
+    var tasksServiceData: LinkedHashMap<String, Task> = LinkedHashMap()
 
     private var shouldReturnError = false
 
@@ -36,7 +36,7 @@ class FakeRepository : TasksRepository {
         shouldReturnError = value
     }
 
-    override suspend fun getTask(taskId: String, forceUpdate: Boolean): Result<TaskModel> {
+    override suspend fun getTask(taskId: String, forceUpdate: Boolean): Result<Task> {
         if (shouldReturnError) {
             return Error(Exception("Test exception"))
         }
@@ -46,20 +46,20 @@ class FakeRepository : TasksRepository {
         return Error(Exception("Could not find task"))
     }
 
-    override suspend fun getTasks(forceUpdate: Boolean): Result<List<TaskModel>> {
+    override suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
         if (shouldReturnError) {
             return Error(Exception("Test exception"))
         }
         return Success(tasksServiceData.values.toList())
     }
 
-    override suspend fun saveTask(taskModel: TaskModel) {
-        tasksServiceData[taskModel.id] = taskModel
+    override suspend fun saveTask(task: Task) {
+        tasksServiceData[task.entryid] = task
     }
 
-    override suspend fun completeTask(taskModel: TaskModel) {
-        val completedTask = TaskModel(taskModel.title, taskModel.description, true, taskModel.id)
-        tasksServiceData[taskModel.id] = completedTask
+    override suspend fun completeTask(task: Task) {
+        val completedTask = Task(task.title, task.description, true, task.entryid)
+        tasksServiceData[task.entryid] = completedTask
     }
 
     override suspend fun completeTask(taskId: String) {
@@ -67,9 +67,9 @@ class FakeRepository : TasksRepository {
         throw NotImplementedError()
     }
 
-    override suspend fun activateTask(taskModel: TaskModel) {
-        val activeTask = TaskModel(taskModel.title, taskModel.description, false, taskModel.id)
-        tasksServiceData[taskModel.id] = activeTask
+    override suspend fun activateTask(task: Task) {
+        val activeTask = Task(task.title, task.description, false, task.entryid)
+        tasksServiceData[task.entryid] = activeTask
     }
 
     override suspend fun activateTask(taskId: String) {
@@ -78,8 +78,8 @@ class FakeRepository : TasksRepository {
 
     override suspend fun clearCompletedTasks() {
         tasksServiceData = tasksServiceData.filterValues {
-            !it.isCompleted
-        } as LinkedHashMap<String, TaskModel>
+            !it.completed
+        } as LinkedHashMap<String, Task>
     }
 
     override suspend fun deleteTask(taskId: String) {
@@ -91,9 +91,9 @@ class FakeRepository : TasksRepository {
     }
 
     @VisibleForTesting
-    fun addTasks(vararg taskModels: TaskModel) {
-        for (task in taskModels) {
-            tasksServiceData[task.id] = task
+    fun addTasks(vararg tasks: Task) {
+        for (task in tasks) {
+            tasksServiceData[task.entryid] = task
         }
     }
 }

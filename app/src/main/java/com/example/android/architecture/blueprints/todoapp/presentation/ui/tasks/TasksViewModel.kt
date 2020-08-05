@@ -24,15 +24,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android.architecture.blueprints.todoapp.Event
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskEntityMapper
-import com.example.android.architecture.blueprints.todoapp.data.mapper.TaskListMapper
 import com.example.android.architecture.blueprints.todoapp.domain.utils.Result.Success
-import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
-import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 import com.example.android.architecture.blueprints.todoapp.domain.ActivateTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.ClearCompletedTasksUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.CompleteTaskUseCase
 import com.example.android.architecture.blueprints.todoapp.domain.GetTasksUseCase
+import com.example.android.architecture.blueprints.todoapp.presentation.entity.PresenterEntity
+import com.example.android.architecture.blueprints.todoapp.presentation.mapper.PresenterEntityMapper
+import com.example.android.architecture.blueprints.todoapp.presentation.mapper.PresenterListMapper
 import com.example.android.architecture.blueprints.todoapp.presentation.util.wrapEspressoIdlingResource
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -40,7 +39,6 @@ import timber.log.Timber
 /**
  * ViewModel for the task list screen.
  */
-//Viewmodel 에서 Domain의 접근이 가능함(UseCase)
 class TasksViewModel(
     private val getTasksUseCase: GetTasksUseCase,
     private val clearCompletedTasksUseCase: ClearCompletedTasksUseCase,
@@ -48,11 +46,11 @@ class TasksViewModel(
     private val activateTaskUseCase: ActivateTaskUseCase
 ) : ViewModel() {
 
-    private val taskEntityMapper = TaskEntityMapper()
-    private val taskListMapper = TaskListMapper()
+    private val presenterListMapper = PresenterListMapper()
+    private val presenterEntityMapper = PresenterEntityMapper()
 
-    private val _items = MutableLiveData<List<TaskModel>>().apply { value = emptyList() } //빈 리스트로 채움
-    val items: LiveData<List<TaskModel>> = _items //xml에 접근하는 것은 item, view model 내부에서 처리되는 것은 _items
+    private val _items = MutableLiveData<List<PresenterEntity>>().apply { value = emptyList() } //빈 리스트로 채움
+    val items: LiveData<List<PresenterEntity>> = _items //xml에 접근하는 것은 item, view model 내부에서 처리되는 것은 _items
 
     private val _dataLoading = MutableLiveData<Boolean>()
     val dataLoading: LiveData<Boolean> = _dataLoading
@@ -90,7 +88,7 @@ class TasksViewModel(
 
     init {
         // Set initial state
-        setFiltering(TasksFilterType.ALL_TASKS) //처음에는 모든 테스크가 보인다.
+        setFiltering(TasksFilterType.ALL_TASKS) //처음에는 모든 Task 보인다.
         loadTasks(true)
     }
 
@@ -146,13 +144,13 @@ class TasksViewModel(
         }
     }
 
-    //todo가 complete(check)되었는지 판
-    fun completeTask(taskModel: TaskModel, completed: Boolean) = viewModelScope.launch {
+    //todo가 complete(check)되었는지 판단
+    fun completeTask(tasks: PresenterEntity, completed: Boolean) = viewModelScope.launch {
         if (completed) {
-            completeTaskUseCase(taskEntityMapper.toEntity(taskModel)) //checkbox 활성화
+            completeTaskUseCase(presenterEntityMapper.toEntity(tasks)) //checkbox 활성화
             showSnackbarMessage(R.string.task_marked_complete)
         } else {
-            activateTaskUseCase(taskEntityMapper.toEntity(taskModel)) //check box 비활성화
+            activateTaskUseCase(presenterEntityMapper.toEntity(tasks)) //check box 비활성화
             showSnackbarMessage(R.string.task_marked_active)
         }
         // Refresh list to show the new state
@@ -197,7 +195,7 @@ class TasksViewModel(
                 if (tasksResult is Success) {
                     isDataLoadingError.value = false
                     Timber.e("force update: $forceUpdate")
-                    _items.value = taskListMapper.toModel(tasksResult.data)
+                    _items.value = presenterListMapper.toView(tasksResult.data)
                 } else {
                     isDataLoadingError.value = false
                     Timber.e("force update: $forceUpdate")

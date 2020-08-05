@@ -17,14 +17,16 @@ package com.example.android.architecture.blueprints.todoapp.presentation.util
 
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskModel
 import com.example.android.architecture.blueprints.todoapp.domain.repository.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.presentation.entity.PresenterEntity
+import com.example.android.architecture.blueprints.todoapp.presentation.mapper.PresenterEntityMapper
 import kotlinx.coroutines.runBlocking
 
 /**
  * A blocking version of TasksRepository.saveTask to minimize the number of times we have to
  * explicitly add <code>runBlocking { ... }</code> in our tests
  */
-fun TasksRepository.saveTaskBlocking(taskModel: TaskModel) = runBlocking {
-    this@saveTaskBlocking.saveTask(taskModel)
+fun TasksRepository.saveTaskBlocking(tasks: PresenterEntity) = runBlocking {
+    this@saveTaskBlocking.saveTask(PresenterEntityMapper().toEntity(tasks))
 }
 
 fun TasksRepository.getTasksBlocking(forceUpdate: Boolean) = runBlocking {
